@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.example.orderservice.grpc";
+option java_outer_classname = "OrderProto";
+
+import "google/protobuf/timestamp.proto";
+
+
+service OrderService {
+  rpc CreateOrder(CreateOrderRequest) returns (CreateOrderResponse);
+  rpc GetAllOrders(Empty) returns (GetAllOrdersResponse);
+  rpc GetMyOrders(GetMyOrdersRequest) returns (GetMyOrdersResponse);
+  rpc DeleteOrder(DeleteOrderRequest) returns (DeleteOrderResponse);
+  rpc UpdateOrderStatus(UpdateOrderStatusRequest) returns (UpdateOrderStatusResponse);
+}
+
+
+message OrderItem {
+  int64 product_id = 1;
+  int32 quantity = 2;
+}
+
+message CreateOrderRequest {
+  string user_id = 1;  
+  string email = 2;
+  string address = 3;
+  repeated OrderItem items = 4;
+}
+
+message CreateOrderResponse {
+  bool success = 1;
+  string message = 2;
+  int64 order_id = 3;
+}
+
+message Empty {}
+
+message OrderDto {
+  int64 order_id = 1;
+  string user_id = 2;
+  string status = 3;
+  repeated OrderItem items = 4;
+  google.protobuf.Timestamp created_at = 5;
+}
+
+message GetAllOrdersResponse {
+  repeated OrderDto orders = 1;
+}
+
+message GetMyOrdersRequest {
+  string user_id = 1;
+}
+
+message GetMyOrdersResponse {
+  repeated OrderDto orders = 1;
+}
+
+message DeleteOrderRequest {
+  int64 order_id = 1;
+}
+
+message DeleteOrderResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message UpdateOrderStatusRequest {
+  int64 order_id = 1;
+  string status = 2;
+}
+
+message UpdateOrderStatusResponse {
+  bool success = 1;
+  string message = 2;
+}

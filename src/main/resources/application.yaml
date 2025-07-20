@@ -1,0 +1,8 @@
+grpc:
+  server:
+    port: 9092
+    enable-reflection: true
+  client:
+    productService:
+      address: "static://localhost:9090"
+      negotiationType: PLAINTEXT
