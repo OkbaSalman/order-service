@@ -41,12 +41,6 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public CreateOrderResponse createOrder(CreateOrderRequest request) {
-        System.out.println("Received gRPC request: userId=" + request.getUserId()
-            + ", email=" + request.getEmail()
-            + ", address=" + request.getAddress()
-            + ", items=" + request.getItemsList());
-            
-
         Order order = new Order();
         order.setUserId(request.getUserId());
         order.setEmail(request.getEmail());

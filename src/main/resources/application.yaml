@@ -4,5 +4,5 @@ grpc:
     enable-reflection: true
   client:
     productService:
-      address: "static://localhost:9090"
+      address: "static://localhost:9094"
       negotiationType: PLAINTEXT

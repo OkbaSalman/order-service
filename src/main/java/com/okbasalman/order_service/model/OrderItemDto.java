@@ -6,6 +6,7 @@ import lombok.Data;
 
 @Data
 @Entity
+@Table(name = "order_items")
 public class OrderItemDto {
 
     @Id
