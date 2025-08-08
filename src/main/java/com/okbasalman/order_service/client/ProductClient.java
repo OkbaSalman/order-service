@@ -21,11 +21,8 @@ public class ProductClient {
         );
     }
 
-    public ProductResponse decreaseStock(Long productId, int quantity) {
-    DecreaseStockRequest request = DecreaseStockRequest.newBuilder()
-        .setProductId(productId)
-        .setQuantity(quantity)
-        .build();
+    public ProductResponse decreaseStock(Long productVariantId, int quantity) {
+    DecreaseStockRequest request = DecreaseStockRequest.newBuilder().setProductVariantId(productVariantId).setQuantity(quantity).build();
 
     return productStub.decreaseStock(request);
 }

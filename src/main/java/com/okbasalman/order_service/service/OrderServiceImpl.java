@@ -1,6 +1,7 @@
 package com.okbasalman.order_service.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ import com.example.orderservice.grpc.OrderItem;
 import com.example.orderservice.grpc.UpdateOrderStatusRequest;
 import com.example.orderservice.grpc.UpdateOrderStatusResponse;
 import com.okbasalman.grpc.ProductResponse;
+import com.okbasalman.grpc.ProductVariantResponse;
 import com.okbasalman.order_service.client.ProductClient;
 import com.okbasalman.order_service.model.Order;
 import com.okbasalman.order_service.model.OrderItemDto;
@@ -53,17 +55,25 @@ public class OrderServiceImpl implements OrderService {
         + ", quantity=" + itemReq.getQuantity());
             ProductResponse product = productClient.getProductById(itemReq.getProductId());
 
-            if (product.getStock() < itemReq.getQuantity()) {
+            // CHANGE START: Find the specific variant and check its stock
+            Optional<ProductVariantResponse> variant = product.getVariantsList().stream()
+                .filter(v -> v.getId() == itemReq.getProductVariantId())
+                .findFirst();
+
+            if (variant.isEmpty() || variant.get().getStock() < itemReq.getQuantity()) {
                 return CreateOrderResponse.newBuilder()
                         .setSuccess(false)
                         .setMessage( product.getName() + " has insufficient stock")
                         .build();
             }
-
+            // CHANGE END
             
-             OrderItemDto item = new OrderItemDto();
+            OrderItemDto item = new OrderItemDto();
             
             item.setProductId(itemReq.getProductId());
+            // CHANGE START: Set the product variant ID
+            item.setProductVariantId(itemReq.getProductVariantId()); 
+            // CHANGE END
             item.setQuantity(itemReq.getQuantity());
             item.setOrder(order);
             order.getItems().add(item);
@@ -99,6 +109,7 @@ public class OrderServiceImpl implements OrderService {
             for (OrderItemDto item : order.getItems()) {
                 OrderItem orderItem = OrderItem.newBuilder()
                     .setProductId(item.getProductId())
+                    .setProductVariantId(item.getProductVariantId())
                     .setQuantity(item.getQuantity())
                     .build();
             orderDto.addItems(orderItem);
@@ -131,6 +142,7 @@ public class OrderServiceImpl implements OrderService {
         for (OrderItemDto item : order.getItems()) {
             OrderItem orderItem = OrderItem.newBuilder()
                 .setProductId(item.getProductId())
+                .setProductVariantId(item.getProductVariantId())
                 .setQuantity(item.getQuantity())
                 .build();
             orderDto.addItems(orderItem);
@@ -183,18 +195,26 @@ public UpdateOrderStatusResponse updateOrderStatus(UpdateOrderStatusRequest requ
             .build();
     }
 
-    if (newStatus == OrderStatus.CONFIRMED && order.getStatus() != OrderStatus.CONFIRMED) {
+     if (newStatus == OrderStatus.CONFIRMED && order.getStatus() != OrderStatus.CONFIRMED) {
         for (OrderItemDto item : order.getItems()) {
             ProductResponse product = productClient.getProductById(item.getProductId());
 
-            if (product.getStock() < item.getQuantity()) {
+            // CHANGE START: Find the specific variant and check its stock
+            Optional<ProductVariantResponse> variant = product.getVariantsList().stream()
+                .filter(v -> v.getId() == item.getProductVariantId())
+                .findFirst();
+            
+            if (variant.isEmpty() || variant.get().getStock() < item.getQuantity()) {
                 return UpdateOrderStatusResponse.newBuilder()
-                    .setSuccess(false)
-                    .setMessage("Insufficient stock for product: " + product.getName())
-                    .build();
+                        .setSuccess(false)
+                        .setMessage("Insufficient stock for product: " + product.getName())
+                        .build();
             }
+            // CHANGE END
 
-            productClient.decreaseStock(item.getProductId(), item.getQuantity());
+            // CHANGE START: Call decreaseStock with the correct productVariantId
+            productClient.decreaseStock(item.getProductVariantId(), item.getQuantity());
+            // CHANGE END
         }
     }
 

@@ -1,81 +1,92 @@
 syntax = "proto3";
+
 package products;
 option java_multiple_files=true;
 option java_package="com.okbasalman.grpc";
 option java_outer_classname="ProductsProto";
 
-
-
-
+import "google/protobuf/empty.proto";
 
 service ProductService {
-    rpc CreateProduct (CreateProductRequest) returns (ProductResponse);
     rpc GetProductById (GetProductByIdRequest) returns (ProductResponse);
-    rpc GetAllProducts (Empty) returns (ProductListResponse);
+    rpc GetAllProducts (google.protobuf.Empty) returns (ProductListResponse);
+    rpc CreateProduct (CreateProductRequest) returns (ProductResponse);
     rpc UpdateProduct (UpdateProductRequest) returns (ProductResponse);
     rpc DeleteProduct (DeleteProductRequest) returns (DeleteProductResponse);
-
     rpc DecreaseStock (DecreaseStockRequest) returns (ProductResponse);
 }
 
-
-message DecreaseStockRequest {
-  int64 product_id = 1;
-  int32 quantity = 2;
-}
-
-message CreateProductRequest {
-    optional string name = 1;
-    optional double price = 2;
-    optional int32 stock = 3;
-    repeated string imagesUrls = 4;
-    optional string color = 5;
-    optional string size = 6;
-    optional string season = 7;
-    optional string description = 8;
-}
-
-
-
-message GetProductByIdRequest {
+// Nested messages
+message ProductImageResponse {
     int64 id = 1;
+    string base64Data = 2;
 }
 
-
-message UpdateProductRequest {
-    optional int64 id = 1;
-    optional string name = 2;
-    optional double price = 3;
-    optional int32 stock = 4;
-    repeated string imagesUrls = 5;
-    optional string color = 6;
-    optional string size = 7;
-    optional string season = 8;
-    optional string desription = 9;
-}
-
-
-message DeleteProductRequest {
+message ProductVariantResponse {
     int64 id = 1;
+    double price = 2;
+    int32 stock = 3;
+    string color = 4;
+    string size = 5;
+    repeated ProductImageResponse images = 6;
 }
-
-
 
 message ProductResponse {
     int64 id = 1;
     string name = 2;
-    double price = 3;
-    int32 stock = 4;
-    repeated string imagesUrls = 5;
-    string color = 6;
-    string size = 7;
-    string season = 8;
-    string description = 9;
-    
+    string description = 3;
+    string season = 4;
+    repeated ProductVariantResponse variants = 5;
 }
 
 message ProductListResponse {
     repeated ProductResponse products = 1;
+}
+
+// Requests
+message GetProductByIdRequest {
+    int64 id = 1;
+}
+
+message CreateProductRequest {
+    string name = 1;
+    string description = 2;
+    string season = 3;
+    repeated ProductVariantCreateRequest variants = 4;
+}
+
+message ProductVariantCreateRequest {
+    double price = 1;
+    int32 stock = 2;
+    string color = 3;
+    string size = 4;
+    repeated string base64Images = 5;
+}
+
+message UpdateProductRequest {
+    int64 id = 1;
+    string name = 2;
+    string description = 3;
+    string season = 4;
+    repeated ProductVariantUpdateRequest variants = 5;
+}
+
+message ProductVariantUpdateRequest {
+    int64 id = 1;
+    double price = 2;
+    int32 stock = 3;
+    string color = 4;
+    string size = 5;
+    repeated ProductImageUpdateRequest images = 6;
+}
+
+message ProductImageUpdateRequest {
+    int64 id = 1;
+    string base64Data = 2;
+}
+
+message DeleteProductRequest {
+    int64 id = 1;
 }
 
 message DeleteProductResponse {
@@ -83,4 +94,7 @@ message DeleteProductResponse {
     string message = 2;
 }
 
-message Empty {}
+message DecreaseStockRequest {
+    int64 productVariantId = 1;
+    int32 quantity = 2;
+}
